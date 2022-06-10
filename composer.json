@@ -1,0 +1,16 @@
+{
+	"name": "smic/page-warmup",
+	"type": "typo3-cms-extension",
+	"description": "Page Cache Warmup",
+	"version": "1.0.0",
+	"autoload": {
+		"psr-4": {
+			"Smic\\PageWarmup\\": "Classes/"
+		}
+	},
+	"extra": {
+		"typo3/cms": {
+			"extension-key": "page_warmup"
+		}
+	}
+}

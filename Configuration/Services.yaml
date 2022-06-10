@@ -1,0 +1,13 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Smic\PageWarmup\Service\:
+    resource: '../Classes/Service/*'
+    public: true
+
+  Smic\PageWarmup\Task\:
+    resource: '../Classes/Task/*'
+    public: true
