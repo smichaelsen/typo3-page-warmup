@@ -12,20 +12,18 @@ class WarmupQueueWorkerTaskAdditionalFieldProvider implements AdditionalFieldPro
 {
     public function getAdditionalFields(array &$taskInfo, $task, SchedulerModuleController $schedulerModule): array
     {
-        /** @var WarmupQueueWorkerTask $task */
-        $taskInfo['timeLimit'] = $task->getTimeLimit();
+        /** @var ?WarmupQueueWorkerTask $task */
+        $taskInfo['timeLimit'] = $task instanceof WarmupQueueWorkerTask ? $task->getTimeLimit() : 60;
 
-        $additionalFields = [
+        return [
             'timeLimit' => [
-                'code' => '<input type="number" class="form-control" name="tx_scheduler[timeLimit]" value="' . $task->getTimeLimit() . '" />',
+                'code' => '<input type="number" class="form-control" name="tx_scheduler[timeLimit]" value="' . $taskInfo['timeLimit'] . '" />',
                 'label' => 'Time limit in seconds',
             ],
         ];
-
-        return $additionalFields;
     }
 
-    public function validateAdditionalFields(array &$submittedData, SchedulerModuleController $schedulerModule)
+    public function validateAdditionalFields(array &$submittedData, SchedulerModuleController $schedulerModule): bool
     {
         return true;
     }
