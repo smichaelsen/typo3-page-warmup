@@ -36,6 +36,7 @@ class WarmupReservationService
 
     public function addReservations(string $cacheIdentifier, string $url, array $cacheTags): void
     {
+        $cacheTags = array_unique($cacheTags);
         foreach ($cacheTags as $cacheTag) {
             $this->addReservation($cacheIdentifier, $url, $cacheTag);
         }
