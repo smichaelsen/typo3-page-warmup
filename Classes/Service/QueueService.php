@@ -22,7 +22,7 @@ class QueueService
 
     public function queue(string $url): void
     {
-        $this->queryBuilder->getConnection()->executeQuery('INSERT IGNORE tx_pagewarmup_queue SET url = :url, done = :done', ['url' => $url, 'done' => 0]);
+        $this->queryBuilder->getConnection()->executeQuery('REPLACE INTO tx_pagewarmup_queue SET url = :url, done = :done', ['url' => $url, 'done' => 0]);
     }
 
     public function queueMany(array $urls): void
