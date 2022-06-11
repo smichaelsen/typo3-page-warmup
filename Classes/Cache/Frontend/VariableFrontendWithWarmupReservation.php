@@ -37,14 +37,16 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
     {
         parent::flush();
         $warmupReservationService = GeneralUtility::makeInstance(WarmupReservationService::class);
-        $warmupReservationService->flushReservations($this->getIdentifier());
+        $urls = $warmupReservationService->collectAllReservations($this->getIdentifier());
+        $queueService = GeneralUtility::makeInstance(QueueService::class);
+        $queueService->queueMany($urls);
     }
 
     public function flushByTag($tag)
     {
         parent::flushByTag($tag);
         $warmupReservationService = GeneralUtility::makeInstance(WarmupReservationService::class);
-        $urls = $warmupReservationService->collectReservations($this->getIdentifier(), [$tag]);
+        $urls = $warmupReservationService->collectReservationsByCacheTags($this->getIdentifier(), [$tag]);
         $queueService = GeneralUtility::makeInstance(QueueService::class);
         $queueService->queueMany($urls);
     }
@@ -54,7 +56,7 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
         parent::flushByTags($tags);
         $tags = array_unique($tags);
         $warmupReservationService = GeneralUtility::makeInstance(WarmupReservationService::class);
-        $urls = $warmupReservationService->collectReservations($this->getIdentifier(), $tags);
+        $urls = $warmupReservationService->collectReservationsByCacheTags($this->getIdentifier(), $tags);
         $queueService = GeneralUtility::makeInstance(QueueService::class);
         $queueService->queueMany($urls);
     }

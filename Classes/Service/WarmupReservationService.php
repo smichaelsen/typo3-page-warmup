@@ -42,7 +42,27 @@ class WarmupReservationService
         }
     }
 
-    public function collectReservations(string $cacheIdentifier, array $cacheTags): array
+    public function collectAllReservations(string $cacheIdentifier): array
+    {
+        $queryBuilder = clone $this->queryBuilder;
+        $where = [
+            $queryBuilder->expr()->eq('cache', $queryBuilder->createNamedParameter($cacheIdentifier)),
+        ];
+        $reservations = $queryBuilder
+            ->select('url')
+            ->from('tx_pagewarmup_reservation')
+            ->where(...$where)
+            ->execute()
+            ->fetchAllAssociative();
+        $queryBuilder
+            ->delete('tx_pagewarmup_reservation')
+            ->where(...$where)
+            ->execute();
+        $urls = array_unique(array_column($reservations, 'url'));
+        return $urls;
+    }
+
+    public function collectReservationsByCacheTags(string $cacheIdentifier, array $cacheTags): array
     {
         $queryBuilder = clone $this->queryBuilder;
         $where = [

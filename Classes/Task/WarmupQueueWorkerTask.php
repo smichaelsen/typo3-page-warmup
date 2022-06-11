@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace Smic\PageWarmup\Task;
 
+use Smic\PageWarmup\Service\QueueService;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Scheduler\ProgressProviderInterface;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
-class WarmupQueueWorkerTask extends AbstractTask
+class WarmupQueueWorkerTask extends AbstractTask implements ProgressProviderInterface
 {
     private int $timeLimit = 60;
 
     public function execute(): bool
     {
-        $this->workThroughQueueWithTimeLimit(60);
+        $this->workThroughQueueWithTimeLimit($this->timeLimit);
         return true;
     }
 
@@ -29,20 +31,23 @@ class WarmupQueueWorkerTask extends AbstractTask
         $this->timeLimit = $timeLimit;
     }
 
-    public function workThroughQueueWithTimeLimit(int $seconds)
+    public function workThroughQueueWithTimeLimit(int $seconds): void
     {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_pagewarmup_queue');
+        $queueService = GeneralUtility::makeInstance(QueueService::class);
         $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
-
-        $result = $queryBuilder
-            ->select('url')
-            ->from('tx_pagewarmup_queue')
-            ->execute();
-
         $end = time() + $seconds;
-        while (time() < $end && $url = $result->fetchOne()) {
+
+        foreach ($queueService->provide() as $url) {
+            if (time() >= $end) {
+                return;
+            }
             $requestFactory->request($url);
-            $queryBuilder->getConnection()->delete('tx_pagewarmup_queue', ['url' => $url]);
         }
+    }
+
+    public function getProgress(): float
+    {
+        $queueService = GeneralUtility::makeInstance(QueueService::class);
+        return $queueService->getProgress();
     }
 }

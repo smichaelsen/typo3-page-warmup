@@ -22,7 +22,7 @@ class QueueService
 
     public function queue(string $url): void
     {
-        $this->queryBuilder->getConnection()->executeQuery('INSERT IGNORE tx_pagewarmup_queue SET url = :url', ['url' => $url]);
+        $this->queryBuilder->getConnection()->executeQuery('INSERT IGNORE tx_pagewarmup_queue SET url = :url, done = :done', ['url' => $url, 'done' => 0]);
     }
 
     public function queueMany(array $urls): void
@@ -30,5 +30,38 @@ class QueueService
         foreach ($urls as $url) {
             $this->queue($url);
         }
+    }
+
+    public function provide(): \Generator
+    {
+        $queryBuilder = clone $this->queryBuilder;
+        $result = $queryBuilder
+            ->select('url')
+            ->from('tx_pagewarmup_queue')
+            ->where($queryBuilder->expr()->eq('done', $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT)))
+            ->execute();
+        while ($url = $result->fetchOne()) {
+            yield $url;
+            $queryBuilder->getConnection()->update('tx_pagewarmup_queue', ['done' => 1], ['url' => $url]);
+        }
+        $queryBuilder->getConnection()->truncate('tx_pagewarmup_queue');
+    }
+
+    public function getProgress(): float
+    {
+        $queryBuilder = clone $this->queryBuilder;
+        $totalCount = (int)$queryBuilder
+            ->count('url')
+            ->from('tx_pagewarmup_queue')
+            ->execute()
+            ->fetchOne();
+        if ($totalCount === 0) {
+            return 100.0;
+        }
+        $doneCount = $queryBuilder
+            ->where($queryBuilder->expr()->eq('done', $queryBuilder->createNamedParameter(1, \PDO::PARAM_INT)))
+            ->execute()
+            ->fetchOne();
+        return ($doneCount / $totalCount) * 100;
     }
 }

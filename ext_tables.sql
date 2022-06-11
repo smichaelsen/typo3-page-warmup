@@ -7,5 +7,6 @@ CREATE TABLE tx_pagewarmup_reservation (
 
 CREATE TABLE tx_pagewarmup_queue (
 	url text,
+	done tinyint(4) DEFAULT '0' NOT NULL,
 	UNIQUE url (url),
 );
