@@ -47,6 +47,6 @@ class WarmupQueueWorkerTask extends AbstractTask implements ProgressProviderInte
     public function getProgress(): float
     {
         $queueService = GeneralUtility::makeInstance(QueueService::class);
-        return $queueService->getProgress();
+        return max(0.01, $queueService->getProgress());
     }
 }
