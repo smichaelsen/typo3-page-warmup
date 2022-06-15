@@ -35,14 +35,19 @@ class QueueService
     public function provide(): \Generator
     {
         $queryBuilder = clone $this->queryBuilder;
-        $result = $queryBuilder
+        $queryBuilder
             ->select('url')
             ->from('tx_pagewarmup_queue')
             ->where($queryBuilder->expr()->eq('done', $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT)))
-            ->execute();
-        while ($url = $result->fetchOne()) {
-            yield $url;
+            ->setMaxResults(1);
+        while(true) {
+            $result = $queryBuilder->execute();
+            $url = $result->fetchOne();
+            if ($url === false) {
+                break;
+            }
             $queryBuilder->getConnection()->update('tx_pagewarmup_queue', ['done' => 1], ['url' => $url]);
+            yield $url;
         }
         $queryBuilder->getConnection()->truncate('tx_pagewarmup_queue');
     }

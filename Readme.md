@@ -9,7 +9,7 @@ This extension detects URLs of pages that have fallen out of the cache and provi
 
 ## Usage
 
-After installing the extension, set up a new scheduler task with the class "Page Cache Warmup Queue Worker (page_warmup)". The recommended setup is:
+After installing the extension, set up a new scheduler task with the class "Page Cache Warmup Queue Worker (page_warmup)". The recommended (conservative) setup is:
 
 * Type: Recurring
 * Frequency: 120
@@ -17,6 +17,15 @@ After installing the extension, set up a new scheduler task with the class "Page
 * Time limit in seconds: 60
 
 That's it. Whenever the caching framework flushes page caches based on cache tags, the affected pages will automatically get warmed up again.
+
+If the cache warmup is too slow, you can try a more aggressive setup like:
+
+* Type: Recurring
+* Frequency: 60
+* Allow Parallel Execution
+* Time limit in seconds: 240
+
+That will result in ~ 4 simultaneous task processes, that are working on the queue. That means increased load on your system.
 
 ![Scheduler Task](doc/scheduler.png?raw=true "Scheduler Task")
 

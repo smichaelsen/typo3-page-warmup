@@ -38,13 +38,13 @@ class WarmupQueueWorkerTask extends AbstractTask implements ProgressProviderInte
         $end = time() + $seconds;
 
         foreach ($queueService->provide() as $url) {
-            if (time() >= $end) {
-                return;
-            }
             try {
                 $requestFactory->request($url);
             } catch (ClientException $e) {
                 // ignore
+            }
+            if (time() >= $end) {
+                return;
             }
         }
     }
