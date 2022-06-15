@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Smic\PageWarmup\Task;
 
+use GuzzleHttp\Exception\ClientException;
 use Smic\PageWarmup\Service\QueueService;
 use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -40,7 +41,11 @@ class WarmupQueueWorkerTask extends AbstractTask implements ProgressProviderInte
             if (time() >= $end) {
                 return;
             }
-            $requestFactory->request($url);
+            try {
+                $requestFactory->request($url);
+            } catch (ClientException $e) {
+                 // ignore
+            }
         }
     }
 

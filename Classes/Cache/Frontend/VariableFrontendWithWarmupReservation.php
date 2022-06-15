@@ -8,6 +8,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Smic\PageWarmup\Service\QueueService;
 use Smic\PageWarmup\Service\WarmupReservationService;
 use TYPO3\CMS\Core\Cache\Frontend\VariableFrontend;
+use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class VariableFrontendWithWarmupReservation extends VariableFrontend
@@ -25,11 +26,9 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
             count($tags) > 0
         ) {
             // the cache entry *looks* like a page is being cached
-            $warmupReservationService->addReservations(
-                $this->getIdentifier(),
-                (string)$GLOBALS['TYPO3_REQUEST']->getUri(),
-                $tags
-            );
+            /** @var ServerRequest $request */
+            $request = $GLOBALS['ORIGINAL_REQUEST'] ?? $GLOBALS['TYPO3_REQUEST'];
+            $warmupReservationService->addReservations($this->getIdentifier(), (string)$request->getUri(), $tags);
         }
     }
 
