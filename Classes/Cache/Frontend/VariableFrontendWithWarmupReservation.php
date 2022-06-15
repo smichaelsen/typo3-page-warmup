@@ -16,20 +16,22 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
     public function set($entryIdentifier, $variable, array $tags = [], $lifetime = null)
     {
         parent::set($entryIdentifier, $variable, $tags, $lifetime);
-        $warmupReservationService = GeneralUtility::makeInstance(WarmupReservationService::class);
         if (
-            is_array($variable) &&
-            isset($variable['page_id']) &&
-            isset($variable['pageTitleInfo']) &&
-            isset($GLOBALS['TYPO3_REQUEST']) &&
-            $GLOBALS['TYPO3_REQUEST'] instanceof ServerRequestInterface &&
-            count($tags) > 0
+            !is_array($variable) ||
+            !isset($variable['page_id']) ||
+            !isset($variable['pageTitleInfo']) ||
+            !isset($GLOBALS['TYPO3_REQUEST']) ||
+            !$GLOBALS['TYPO3_REQUEST'] instanceof ServerRequestInterface ||
+            count($tags) === 0
         ) {
-            // the cache entry *looks* like a page is being cached
-            /** @var ServerRequest $request */
-            $request = $GLOBALS['ORIGINAL_REQUEST'] ?? $GLOBALS['TYPO3_REQUEST'];
-            $warmupReservationService->addReservations($this->getIdentifier(), (string)$request->getUri(), $tags);
+            // the cache entry doesn't *look* like a page is being cached => nothing to do
+            return;
         }
+
+        $warmupReservationService = GeneralUtility::makeInstance(WarmupReservationService::class);
+        /** @var ServerRequest $request */
+        $request = $GLOBALS['ORIGINAL_REQUEST'] ?? $GLOBALS['TYPO3_REQUEST'];
+        $warmupReservationService->addReservations($this->getIdentifier(), (string)$request->getUri(), $tags);
     }
 
     public function flush()
