@@ -40,7 +40,7 @@ class QueueService
             ->from('tx_pagewarmup_queue')
             ->where($queryBuilder->expr()->eq('done', $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT)))
             ->setMaxResults(1);
-        while(true) {
+        while (true) {
             $result = $queryBuilder->execute();
             $url = $result->fetchOne();
             if ($url === false) {
