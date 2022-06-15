@@ -20,7 +20,7 @@ That's it. Whenever the caching framework flushes page caches based on cache tag
 
 ## Under the hood
 
-In the TYPO3 caching framework entries are flushed by tags or all at once, at it gives you no feedback about what content / information has actually been flushed - that makes it hard to to know what
+In the TYPO3 caching framework entries are flushed by tags or all at once, and it gives you no feedback about what content / information has actually been flushed - that makes it hard to to know what
 needs warming up. That's why this extension collects that information when a page is cached. It remembers the URLs and cache tags in a so called _warmup reservation_. When a cache tag is flushed, the
 extension can pull up all reservations matching that tag, and write the page URLs to a warmup queue.
 
