@@ -44,7 +44,7 @@ class WarmupQueueWorkerTask extends AbstractTask implements ProgressProviderInte
             try {
                 $requestFactory->request($url);
             } catch (ClientException $e) {
-                 // ignore
+                // ignore
             }
         }
     }
