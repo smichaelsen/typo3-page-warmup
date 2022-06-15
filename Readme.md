@@ -18,6 +18,8 @@ After installing the extension, set up a new scheduler task with the class "Page
 
 That's it. Whenever the caching framework flushes page caches based on cache tags, the affected pages will automatically get warmed up again.
 
+![Scheduler Task](doc/scheduler.png?raw=true "Scheduler Task")
+
 ## Under the hood
 
 In the TYPO3 caching framework entries are flushed by tags or all at once, and it gives you no feedback about what content / information has actually been flushed - that makes it hard to know what
