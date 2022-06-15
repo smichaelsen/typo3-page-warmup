@@ -54,4 +54,14 @@ class WarmupQueueWorkerTask extends AbstractTask implements ProgressProviderInte
         $queueService = GeneralUtility::makeInstance(QueueService::class);
         return max(0.01, $queueService->getProgress());
     }
+
+    public function getAdditionalInformation(): string
+    {
+        $queueService = GeneralUtility::makeInstance(QueueService::class);
+        $totalCount = $queueService->getTotalCount();
+        if ($totalCount === 0) {
+            return '';
+        }
+        return 'Warmed up ' . $queueService->getDoneCount() . ' of ' . $queueService->getTotalCount() . ' URLs that are in the current queue.';
+    }
 }

@@ -47,21 +47,34 @@ class QueueService
         $queryBuilder->getConnection()->truncate('tx_pagewarmup_queue');
     }
 
-    public function getProgress(): float
+    public function getTotalCount(): int
     {
         $queryBuilder = clone $this->queryBuilder;
-        $totalCount = (int)$queryBuilder
+        return (int)$queryBuilder
             ->count('url')
             ->from('tx_pagewarmup_queue')
             ->execute()
             ->fetchOne();
-        if ($totalCount === 0) {
-            return 100.0;
-        }
-        $doneCount = $queryBuilder
+    }
+
+    public function getDoneCount(): int
+    {
+        $queryBuilder = clone $this->queryBuilder;
+        return (int)$queryBuilder
+            ->count('url')
+            ->from('tx_pagewarmup_queue')
             ->where($queryBuilder->expr()->eq('done', $queryBuilder->createNamedParameter(1, \PDO::PARAM_INT)))
             ->execute()
             ->fetchOne();
+    }
+
+    public function getProgress(): float
+    {
+        $totalCount = $this->getTotalCount();
+        if ($totalCount === 0) {
+            return 100.0;
+        }
+        $doneCount = $this->getDoneCount();
         return ($doneCount / $totalCount) * 100;
     }
 }
