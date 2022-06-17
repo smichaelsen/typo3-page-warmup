@@ -9,6 +9,7 @@ use Smic\PageWarmup\Service\QueueService;
 use Smic\PageWarmup\Service\WarmupReservationService;
 use TYPO3\CMS\Core\Cache\Frontend\VariableFrontend;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class VariableFrontendWithWarmupReservation extends VariableFrontend
@@ -40,7 +41,7 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
             $warmupReservationService->addReservations($this->getIdentifier(), (string)$request->getUri(), $tags);
         } else {
             $uri = $request->getUri()->getScheme() . '://' .  $request->getUri()->getHost() . $request->getUri()->getPath();
-            $warmupReservationService->addReservations($this->getIdentifier(), (string)$uri, $tags);
+            $warmupReservationService->addReservations($this->getIdentifier(), $uri, $tags);
         }
     }
 
@@ -51,6 +52,12 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
         $urls = $warmupReservationService->collectAllReservations($this->getIdentifier());
         $queueService = GeneralUtility::makeInstance(QueueService::class);
         $queueService->queueMany($urls);
+        $readableBacktrace = array_map(
+            fn (array $backtraceEntry) => $backtraceEntry['class'] . '->' . $backtraceEntry['function'],
+            debug_backtrace()
+        );
+        $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
+        $logger->notice('Cache has been flushed. Backtrace: ' . implode('; ', $readableBacktrace));
     }
 
     public function flushByTag($tag)
@@ -71,7 +78,7 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
         $queueService = GeneralUtility::makeInstance(QueueService::class);
         $queueService->queueMany($urls);
     }
-    
+
     private function areAllGetParamsAllowed(array $whitelistedGetParams, array $getParams): bool
     {
         return array_intersect($getParams, $whitelistedGetParams) === $getParams;
