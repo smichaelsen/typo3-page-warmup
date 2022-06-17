@@ -62,6 +62,18 @@ class WarmupQueueWorkerTask extends AbstractTask implements ProgressProviderInte
         if ($totalCount === 0) {
             return '';
         }
-        return 'Warmed up ' . number_format($queueService->getDoneCount()) . ' of ' . number_format($queueService->getTotalCount()) . ' URLs that are in the current queue.';
+        $message = sprintf(
+            'Warmed up %s of %s URLs that are in the current queue.',
+            number_format($queueService->getDoneCount()),
+            number_format($totalCount)
+        );
+        $queueStartTimestamp = $queueService->getQueueStartTimestamp();
+        if ($queueStartTimestamp !== null) {
+            $message .= sprintf(
+                ' Started %s.',
+                date('d.m.Y H:i', $queueStartTimestamp)
+            );
+        }
+        return $message;
     }
 }
