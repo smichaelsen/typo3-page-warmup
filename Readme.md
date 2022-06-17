@@ -18,6 +18,8 @@ After installing the extension, set up a new scheduler task with the class "Page
 
 That's it. Whenever the caching framework flushes page caches based on cache tags, the affected pages will automatically get warmed up again.
 
+![Scheduler Task](doc/scheduler.png?raw=true "Scheduler Task")
+
 If the cache warmup is too slow, you can try a more aggressive setup like:
 
 * Type: Recurring
@@ -26,8 +28,6 @@ If the cache warmup is too slow, you can try a more aggressive setup like:
 * Time limit in seconds: 240
 
 That will result in ~ 4 simultaneous task processes, that are working on the queue. That means increased load on your system.
-
-![Scheduler Task](doc/scheduler.png?raw=true "Scheduler Task")
 
 ## Under the hood
 
