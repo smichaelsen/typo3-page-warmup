@@ -22,7 +22,7 @@ class QueueService
 
     public function queue(string $url): void
     {
-        $this->queryBuilder->getConnection()->executeQuery('REPLACE INTO tx_pagewarmup_queue SET url = :url, done = :done', ['url' => $url, 'done' => 0]);
+        $this->queryBuilder->getConnection()->executeQuery('REPLACE INTO tx_pagewarmup_queue SET url = :url, done = :done, queued = :queued', ['url' => $url, 'done' => 0, 'queued' => $GLOBALS['EXEC_TIME']]);
     }
 
     public function queueMany(array $urls): void
@@ -81,5 +81,24 @@ class QueueService
         }
         $doneCount = $this->getDoneCount();
         return ($doneCount / $totalCount) * 100;
+    }
+
+    public function getQueueStartTimestamp(): ?int
+    {
+        $queryBuilder = clone $this->queryBuilder;
+        $timestamp = $queryBuilder
+            ->select('queued')
+            ->from('tx_pagewarmup_queue')
+            ->where(
+                $queryBuilder->expr()->gt('queued', $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT))
+            )
+            ->orderBy('queued', 'ASC')
+            ->setMaxResults(1)
+            ->execute()
+            ->fetchOne();
+        if ($timestamp === false) {
+            return null;
+        }
+        return (int)$timestamp;
     }
 }
