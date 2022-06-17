@@ -8,6 +8,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Smic\PageWarmup\Service\QueueService;
 use Smic\PageWarmup\Service\WarmupReservationService;
 use TYPO3\CMS\Core\Cache\Frontend\VariableFrontend;
+use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class VariableFrontendWithWarmupReservation extends VariableFrontend
@@ -39,6 +40,12 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
         $urls = $warmupReservationService->collectAllReservations($this->getIdentifier());
         $queueService = GeneralUtility::makeInstance(QueueService::class);
         $queueService->queueMany($urls);
+        $readableBacktrace = array_map(
+            fn (array $backtraceEntry) => $backtraceEntry['class'] . '->' . $backtraceEntry['function'],
+            debug_backtrace()
+        );
+        $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
+        $logger->notice('Cache has been flushed. Backtrace: ' . implode('; ', $readableBacktrace));
     }
 
     public function flushByTag($tag)
