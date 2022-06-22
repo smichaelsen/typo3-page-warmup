@@ -7,6 +7,10 @@ edited, for example.
 
 This extension detects URLs of pages that have fallen out of the cache and provides a scheduler task to warm them up automatically, before your visitors have to do it.
 
+## Installation
+
+`composer require smic/page-warmup`
+
 ## Usage
 
 After installing the extension, set up a new scheduler task with the class "Page Cache Warmup Queue Worker (page_warmup)". The recommended (conservative) setup is:
