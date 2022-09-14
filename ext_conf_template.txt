@@ -1,0 +1,3 @@
+# customcategory=getparams=GET parameter configuration
+# cat=getparams//1; type=string; label=Whitelisted GET parameters (comma separated, ex. utm_source,...)
+getparams.whitelisterparams = utm_source

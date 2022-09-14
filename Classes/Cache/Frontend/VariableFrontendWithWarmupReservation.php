@@ -8,10 +8,13 @@ use Psr\Http\Message\ServerRequestInterface;
 use Smic\PageWarmup\Service\QueueService;
 use Smic\PageWarmup\Service\WarmupReservationService;
 use TYPO3\CMS\Core\Cache\Frontend\VariableFrontend;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class VariableFrontendWithWarmupReservation extends VariableFrontend
 {
+    private array $extensionConfiguration = [];
+
     public function set($entryIdentifier, $variable, array $tags = [], $lifetime = null)
     {
         parent::set($entryIdentifier, $variable, $tags, $lifetime);
@@ -28,8 +31,17 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
             return;
         }
 
+        $this->extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('page_warmup');
+        $whitelistedGetParams = GeneralUtility::trimExplode(',', $this->getWhitelistedParams());
+        $getParams = $request->getQueryParams();
         $warmupReservationService = GeneralUtility::makeInstance(WarmupReservationService::class);
-        $warmupReservationService->addReservations($this->getIdentifier(), (string)$request->getUri(), $tags);
+
+        if ($this->areAllGetParamsAllowed($whitelistedGetParams, array_keys($getParams))) {
+            $warmupReservationService->addReservations($this->getIdentifier(), (string)$request->getUri(), $tags);
+        } else {
+            $uri = $request->getUri()->getScheme() . '://' .  $request->getUri()->getHost() . $request->getUri()->getPath();
+            $warmupReservationService->addReservations($this->getIdentifier(), (string)$uri, $tags);
+        }
     }
 
     public function flush()
@@ -58,5 +70,15 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
         $urls = $warmupReservationService->collectReservationsByCacheTags($this->getIdentifier(), $tags);
         $queueService = GeneralUtility::makeInstance(QueueService::class);
         $queueService->queueMany($urls);
+    }
+    
+    private function areAllGetParamsAllowed(array $whitelistedGetParams, array $getParams): bool
+    {
+        return array_intersect($getParams, $whitelistedGetParams) === $getParams;
+    }
+
+    private function getWhitelistedParams(): string
+    {
+        return $this->extensionConfiguration['getparams']['whitelisterparams'] ?? '';
     }
 }
