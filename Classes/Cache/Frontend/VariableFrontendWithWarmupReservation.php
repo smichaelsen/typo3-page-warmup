@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Smic\PageWarmup\Cache\Frontend;
 
 use Psr\Http\Message\ServerRequestInterface;
-use Smic\PageWarmup\Service\QueueService;
+use Smic\PageWarmup\Service\QueueMakerService;
 use Smic\PageWarmup\Service\WarmupReservationService;
 use TYPO3\CMS\Core\Cache\Frontend\VariableFrontend;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
@@ -39,39 +39,38 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
         if ($this->areAllGetParamsAllowed($whitelistedGetParams, array_keys($getParams))) {
             $warmupReservationService->addReservations($this->getIdentifier(), (string)$request->getUri(), $tags);
         } else {
-            $uri = $request->getUri()->getScheme() . '://' .  $request->getUri()->getHost() . $request->getUri()->getPath();
-            $warmupReservationService->addReservations($this->getIdentifier(), (string)$uri, $tags);
+            $uri = $request->getUri()->getScheme() . '://' . $request->getUri()->getHost() . $request->getUri()->getPath();
+            $warmupReservationService->addReservations($this->getIdentifier(), $uri, $tags);
         }
     }
 
     public function flush()
     {
         parent::flush();
-        $warmupReservationService = GeneralUtility::makeInstance(WarmupReservationService::class);
-        $urls = $warmupReservationService->collectAllReservations($this->getIdentifier());
-        $queueService = GeneralUtility::makeInstance(QueueService::class);
-        $queueService->queueMany($urls);
+
+        $queueMakerService = GeneralUtility::makeInstance(QueueMakerService::class);
+        $queueMakerService->addToQueue($this->getIdentifier(), QueueMakerService::CACHE_ENTRY_TYPE_ALL, null);
     }
 
     public function flushByTag($tag)
     {
         parent::flushByTag($tag);
-        $warmupReservationService = GeneralUtility::makeInstance(WarmupReservationService::class);
-        $urls = $warmupReservationService->collectReservationsByCacheTags($this->getIdentifier(), [$tag]);
-        $queueService = GeneralUtility::makeInstance(QueueService::class);
-        $queueService->queueMany($urls);
+
+        $queueMakerService = GeneralUtility::makeInstance(QueueMakerService::class);
+        $queueMakerService->addToQueue($this->getIdentifier(), QueueMakerService::CACHE_ENTRY_TYPE_TAG, $tag);
     }
 
     public function flushByTags(array $tags)
     {
         parent::flushByTags($tags);
-        $tags = array_unique($tags);
-        $warmupReservationService = GeneralUtility::makeInstance(WarmupReservationService::class);
-        $urls = $warmupReservationService->collectReservationsByCacheTags($this->getIdentifier(), $tags);
-        $queueService = GeneralUtility::makeInstance(QueueService::class);
-        $queueService->queueMany($urls);
+
+        $queueMakerService = GeneralUtility::makeInstance(QueueMakerService::class);
+
+        foreach ($tags as $tag) {
+            $queueMakerService->addToQueue($this->getIdentifier(), QueueMakerService::CACHE_ENTRY_TYPE_TAGS, $tag);
+        }
     }
-    
+
     private function areAllGetParamsAllowed(array $whitelistedGetParams, array $getParams): bool
     {
         return array_intersect($getParams, $whitelistedGetParams) === $getParams;

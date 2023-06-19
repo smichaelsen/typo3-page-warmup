@@ -11,3 +11,9 @@ CREATE TABLE tx_pagewarmup_queue (
 	queued int(11) DEFAULT '0' NOT NULL,
 	UNIQUE url (url(191))
 );
+
+CREATE TABLE tx_pagewarmup_queue_maker (
+	cache tinytext NOT NULL,
+	type tinytext NOT NULL,
+	cache_tag text,
+);
