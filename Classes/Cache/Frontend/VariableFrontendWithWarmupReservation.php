@@ -49,7 +49,7 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
         parent::flush();
 
         $queueMakerService = GeneralUtility::makeInstance(QueueMakerService::class);
-        $queueMakerService->addToQueue($this->getIdentifier(), QueueMakerService::CACHE_ENTRY_TYPE_ALL, null);
+        $queueMakerService->addToQueue($this->getIdentifier(), QueueMakerService::CACHE_ENTRY_TYPE_ALL, '');
     }
 
     public function flushByTag($tag)
