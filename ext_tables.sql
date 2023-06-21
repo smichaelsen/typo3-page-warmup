@@ -15,5 +15,5 @@ CREATE TABLE tx_pagewarmup_queue (
 CREATE TABLE tx_pagewarmup_queue_maker (
 	cache tinytext NOT NULL,
 	type tinytext NOT NULL,
-	cache_tag NOT NULL,
+	cache_tag tinytext NOT NULL,
 );
