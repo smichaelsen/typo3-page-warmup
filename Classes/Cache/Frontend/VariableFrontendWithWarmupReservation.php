@@ -23,7 +23,6 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
         if (
             !is_array($variable) ||
             !isset($variable['page_id']) ||
-            !isset($variable['pageTitleInfo']) ||
             !$request instanceof ServerRequestInterface ||
             count($tags) === 0
         ) {
