@@ -15,7 +15,7 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
 {
     private array $extensionConfiguration = [];
 
-    public function set($entryIdentifier, $variable, array $tags = [], $lifetime = null)
+    public function set($entryIdentifier, $variable, array $tags = [], $lifetime = null): void
     {
         parent::set($entryIdentifier, $variable, $tags, $lifetime);
         /** @var ?ServerRequestInterface $request */
@@ -43,7 +43,7 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
         }
     }
 
-    public function flush()
+    public function flush(): void
     {
         parent::flush();
 
@@ -51,7 +51,7 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
         $queueMakerService->addToQueue($this->getIdentifier(), QueueMakerService::CACHE_ENTRY_TYPE_ALL, '');
     }
 
-    public function flushByTag($tag)
+    public function flushByTag($tag): void
     {
         parent::flushByTag($tag);
 
@@ -59,7 +59,7 @@ class VariableFrontendWithWarmupReservation extends VariableFrontend
         $queueMakerService->addToQueue($this->getIdentifier(), QueueMakerService::CACHE_ENTRY_TYPE_TAG, $tag);
     }
 
-    public function flushByTags(array $tags)
+    public function flushByTags(array $tags): void
     {
         parent::flushByTags($tags);
 
