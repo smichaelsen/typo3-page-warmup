@@ -4,25 +4,19 @@ declare(strict_types=1);
 
 namespace Smic\PageWarmup\Service;
 
+use Doctrine\DBAL\ParameterType;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class QueueService
 {
-    private QueryBuilder $queryBuilder;
-
-    public function __construct(ConnectionPool $connectionPool = null)
-    {
-        if ($connectionPool === null) {
-            $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);
-        }
-        $this->queryBuilder = $connectionPool->getQueryBuilderForTable('tx_pagewarmup_queue');
-    }
+    public function __construct(
+        private readonly ConnectionPool $connectionPool,
+    ) {}
 
     public function queue(string $url): void
     {
-        $this->queryBuilder->getConnection()->executeQuery('REPLACE INTO tx_pagewarmup_queue SET url = :url, done = :done, queued = :queued', ['url' => $url, 'done' => 0, 'queued' => $GLOBALS['EXEC_TIME']]);
+        $this->getQueryBuilder()->getConnection()->executeQuery('REPLACE INTO tx_pagewarmup_queue SET url = :url, done = :done, queued = :queued', ['url' => $url, 'done' => 0, 'queued' => $GLOBALS['EXEC_TIME']]);
     }
 
     public function queueMany(array $urls): void
@@ -34,14 +28,14 @@ class QueueService
 
     public function provide(): \Generator
     {
-        $queryBuilder = clone $this->queryBuilder;
+        $queryBuilder = $this->getQueryBuilder();
         $queryBuilder
             ->select('url')
             ->from('tx_pagewarmup_queue')
-            ->where($queryBuilder->expr()->eq('done', $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT)))
+            ->where($queryBuilder->expr()->eq('done', $queryBuilder->createNamedParameter(0, ParameterType::INTEGER)))
             ->setMaxResults(1);
         while (true) {
-            $result = $queryBuilder->execute();
+            $result = $queryBuilder->executeQuery();
             $url = $result->fetchOne();
             if ($url === false) {
                 break;
@@ -54,22 +48,22 @@ class QueueService
 
     public function getTotalCount(): int
     {
-        $queryBuilder = clone $this->queryBuilder;
+        $queryBuilder = $this->getQueryBuilder();
         return (int)$queryBuilder
             ->count('url')
             ->from('tx_pagewarmup_queue')
-            ->execute()
+            ->executeQuery()
             ->fetchOne();
     }
 
     public function getDoneCount(): int
     {
-        $queryBuilder = clone $this->queryBuilder;
+        $queryBuilder = $this->getQueryBuilder();
         return (int)$queryBuilder
             ->count('url')
             ->from('tx_pagewarmup_queue')
-            ->where($queryBuilder->expr()->eq('done', $queryBuilder->createNamedParameter(1, \PDO::PARAM_INT)))
-            ->execute()
+            ->where($queryBuilder->expr()->eq('done', $queryBuilder->createNamedParameter(1, ParameterType::INTEGER)))
+            ->executeQuery()
             ->fetchOne();
     }
 
@@ -85,20 +79,25 @@ class QueueService
 
     public function getQueueStartTimestamp(): ?int
     {
-        $queryBuilder = clone $this->queryBuilder;
+        $queryBuilder = $this->getQueryBuilder();
         $timestamp = $queryBuilder
             ->select('queued')
             ->from('tx_pagewarmup_queue')
             ->where(
-                $queryBuilder->expr()->gt('queued', $queryBuilder->createNamedParameter(0, \PDO::PARAM_INT))
+                $queryBuilder->expr()->gt('queued', $queryBuilder->createNamedParameter(0, ParameterType::INTEGER))
             )
             ->orderBy('queued', 'ASC')
             ->setMaxResults(1)
-            ->execute()
+            ->executeQuery()
             ->fetchOne();
         if ($timestamp === false) {
             return null;
         }
         return (int)$timestamp;
+    }
+
+    private function getQueryBuilder(): QueryBuilder
+    {
+        return $this->connectionPool->getQueryBuilderForTable('tx_pagewarmup_queue');
     }
 }
