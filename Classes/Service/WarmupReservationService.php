@@ -57,20 +57,25 @@ class WarmupReservationService
     public function collectReservationsByCacheTags(string $cacheIdentifier, array $cacheTags): array
     {
         $queryBuilder = $this->getQueryBuilder();
-        $where = [
-            $queryBuilder->expr()->eq('cache', $queryBuilder->createNamedParameter($cacheIdentifier)),
-            $queryBuilder->expr()->in('cache_tag', $queryBuilder->createNamedParameter($cacheTags, ArrayParameterType::STRING)),
-        ];
         $reservations = $queryBuilder
             ->select('url')
             ->from('tx_pagewarmup_reservation')
-            ->where(...$where)
+            ->where(
+                $queryBuilder->expr()->eq('cache', $queryBuilder->createNamedParameter($cacheIdentifier)),
+                $queryBuilder->expr()->in('cache_tag', $queryBuilder->createNamedParameter($cacheTags, ArrayParameterType::STRING)),
+            )
             ->executeQuery()
             ->fetchAllAssociative();
-        $this->getQueryBuilder()
+
+        $queryBuilder = $this->getQueryBuilder();
+        $queryBuilder
             ->delete('tx_pagewarmup_reservation')
-            ->where(...$where)
+            ->where(
+                $queryBuilder->expr()->eq('cache', $queryBuilder->createNamedParameter($cacheIdentifier)),
+                $queryBuilder->expr()->in('cache_tag', $queryBuilder->createNamedParameter($cacheTags, ArrayParameterType::STRING)),
+            )
             ->executeStatement();
+
         $urls = array_unique(array_column($reservations, 'url'));
         $queryBuilder = $this->getQueryBuilder();
         $queryBuilder
