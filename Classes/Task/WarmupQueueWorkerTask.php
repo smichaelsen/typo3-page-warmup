@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Smic\PageWarmup\Task;
 
 use GuzzleHttp\Exception\BadResponseException;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Smic\PageWarmup\Events\PrepareWarmupRequestOptions;
 use Smic\PageWarmup\Service\QueueService;
 use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -35,11 +37,14 @@ class WarmupQueueWorkerTask extends AbstractTask implements ProgressProviderInte
     {
         $queueService = GeneralUtility::makeInstance(QueueService::class);
         $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
+        $eventDispatcher = GeneralUtility::makeInstance(EventDispatcherInterface::class);
         $end = time() + $seconds;
+
+        $requestOptions = $eventDispatcher->dispatch(new PrepareWarmupRequestOptions())->getRequestOptions();
 
         foreach ($queueService->provide() as $url) {
             try {
-                $requestFactory->request($url);
+                $requestFactory->request($url, 'GET', $requestOptions);
             } catch (BadResponseException $e) {
                 // ignore
             }
