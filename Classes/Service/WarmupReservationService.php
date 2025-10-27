@@ -38,18 +38,21 @@ class WarmupReservationService
     public function collectAllReservations(string $cacheIdentifier): array
     {
         $queryBuilder = $this->getQueryBuilder();
-        $where = [
-            $queryBuilder->expr()->eq('cache', $queryBuilder->createNamedParameter($cacheIdentifier)),
-        ];
         $reservations = $queryBuilder
             ->select('url')
             ->from('tx_pagewarmup_reservation')
-            ->where(...$where)
+            ->where(
+                $queryBuilder->expr()->eq('cache', $queryBuilder->createNamedParameter($cacheIdentifier)),
+            )
             ->executeQuery()
             ->fetchAllAssociative();
+
+        $queryBuilder = $this->getQueryBuilder();
         $this->getQueryBuilder()
             ->delete('tx_pagewarmup_reservation')
-            ->where(...$where)
+            ->where(
+                $queryBuilder->expr()->eq('cache', $queryBuilder->createNamedParameter($cacheIdentifier)),
+            )
             ->executeStatement();
         return array_unique(array_column($reservations, 'url'));
     }
