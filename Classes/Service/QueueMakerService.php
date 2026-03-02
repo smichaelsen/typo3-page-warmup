@@ -16,7 +16,7 @@ class QueueMakerService
     const CACHE_ENTRY_TYPE_TAG = 1;
     const CACHE_ENTRY_TYPE_TAGS = 2;
 
-    public function __construct(ConnectionPool $connectionPool = null)
+    public function __construct(?ConnectionPool $connectionPool = null)
     {
         if ($connectionPool === null) {
             $connectionPool = GeneralUtility::makeInstance(ConnectionPool::class);

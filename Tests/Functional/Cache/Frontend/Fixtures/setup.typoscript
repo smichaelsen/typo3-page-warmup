@@ -1,0 +1,9 @@
+config {
+  debug = 1
+}
+
+page = PAGE
+page {
+  10 = TEXT
+  10.value = Cacheable page
+}
