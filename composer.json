@@ -11,6 +11,21 @@
 	"require": {
 		"typo3/cms-core": "^12.4 || ^13.4"
 	},
+	"require-dev": {
+		"phpunit/phpunit": "^11.5",
+		"typo3/cms-frontend": "^12.4 || ^13.4",
+		"typo3/cms-scheduler": "^12.4 || ^13.4",
+		"typo3/testing-framework": "^9.3"
+	},
+	"config": {
+		"allow-plugins": {
+			"typo3/class-alias-loader": true,
+			"typo3/cms-composer-installers": true
+		}
+	},
+	"scripts": {
+		"test:functional": "phpunit -c .github/phpunit.functional.xml"
+	},
 	"extra": {
 		"typo3/cms": {
 			"extension-key": "page_warmup"
