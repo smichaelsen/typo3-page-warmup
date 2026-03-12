@@ -7,7 +7,6 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['pages']['f
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks'][\Smic\PageWarmup\Task\WarmupQueueMakerTask::class] = [
     'extension' => 'page_warmup',
     'title' => 'Page Cache Warmup Queue Maker',
-    'additionalFields' => \Smic\PageWarmup\Task\WarmupQueueMakerTask::class,
 ];
 
 $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks'][\Smic\PageWarmup\Task\WarmupQueueWorkerTask::class] = [
