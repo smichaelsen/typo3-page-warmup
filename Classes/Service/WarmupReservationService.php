@@ -48,7 +48,7 @@ class WarmupReservationService
             ->fetchAllAssociative();
 
         $queryBuilder = $this->getQueryBuilder();
-        $this->getQueryBuilder()
+        $queryBuilder
             ->delete('tx_pagewarmup_reservation')
             ->where(
                 $queryBuilder->expr()->eq('cache', $queryBuilder->createNamedParameter($cacheIdentifier)),
