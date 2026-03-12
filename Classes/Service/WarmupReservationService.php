@@ -84,7 +84,7 @@ class WarmupReservationService
         $queryBuilder
             ->delete('tx_pagewarmup_reservation')
             ->where($queryBuilder->expr()->in('url', $queryBuilder->createNamedParameter($urls, ArrayParameterType::STRING)))
-            ->executeQuery();
+            ->executeStatement();
         return $urls;
     }
 
