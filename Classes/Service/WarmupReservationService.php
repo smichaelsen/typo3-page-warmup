@@ -70,6 +70,13 @@ class WarmupReservationService
             ->executeQuery()
             ->fetchAllAssociative();
 
+        $urls = array_unique(array_column($reservations, 'url'));
+        if ($urls === []) {
+            // Nothing is reserved for these cache tags, so both statements below would delete
+            // nothing. The second one would do it while scanning the whole table.
+            return [];
+        }
+
         $queryBuilder = $this->getQueryBuilder();
         $queryBuilder
             ->delete('tx_pagewarmup_reservation')
@@ -79,7 +86,6 @@ class WarmupReservationService
             )
             ->executeStatement();
 
-        $urls = array_unique(array_column($reservations, 'url'));
         $queryBuilder = $this->getQueryBuilder();
         $queryBuilder
             ->delete('tx_pagewarmup_reservation')

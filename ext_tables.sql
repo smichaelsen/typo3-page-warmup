@@ -2,7 +2,8 @@ CREATE TABLE tx_pagewarmup_reservation (
 	cache tinytext NOT NULL,
 	url text NOT NULL,
 	cache_tag tinytext NOT NULL,
-	KEY cache_tag (cache(191),cache_tag(191))
+	KEY cache_tag (cache(191),cache_tag(191)),
+	KEY url (url(191))
 );
 
 CREATE TABLE tx_pagewarmup_queue (
