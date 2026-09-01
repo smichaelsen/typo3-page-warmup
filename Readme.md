@@ -33,6 +33,36 @@ If the cache warmup is too slow, you can try a more aggressive setup like:
 
 That will result in ~ 4 simultaneous task processes, that are working on the queue. That means increased load on your system.
 
+## Warmup requests
+
+Warmup requests are sent with the user agent `TYPO3-PageWarmup`, so they can be told apart from
+real visitors in your access log and excluded from your analytics.
+
+Before the queue is worked through, the extension dispatches a `PrepareWarmupRequestOptions` PSR-14
+event carrying the Guzzle request options that every warmup request is sent with. A listener can
+add to them or replace them — to send HTTP basic auth on a protected instance, to set a cookie the
+site needs, or to replace the user agent:
+
+```php
+use Smic\PageWarmup\Events\PrepareWarmupRequestOptions;
+use TYPO3\CMS\Core\Attribute\AsEventListener;
+
+#[AsEventListener]
+final class AddBasicAuthOnWarmupRequest
+{
+    public function __invoke(PrepareWarmupRequestOptions $event): void
+    {
+        $options = $event->getRequestOptions();
+        $options['auth'] = ['username', 'password'];
+
+        $event->setRequestOptions($options);
+    }
+}
+```
+
+`#[AsEventListener]` needs TYPO3 v13 or newer. On v12, register the listener with the
+`event.listener` service tag instead.
+
 ## Under the hood
 
 In the TYPO3 caching framework entries are flushed by tags or all at once, and it gives you no feedback about what content / information has actually been flushed - that makes it hard to know what

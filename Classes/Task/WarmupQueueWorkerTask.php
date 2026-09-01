@@ -15,6 +15,12 @@ use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
 class WarmupQueueWorkerTask extends AbstractTask implements ProgressProviderInterface
 {
+    /**
+     * Names warmup traffic in the access log of the site being warmed up, so it can be told apart
+     * from real visitors. Listeners on PrepareWarmupRequestOptions can replace it.
+     */
+    private const DEFAULT_USER_AGENT = 'TYPO3-PageWarmup';
+
     private int $timeLimit = 60;
 
     public function execute(): bool
@@ -40,7 +46,9 @@ class WarmupQueueWorkerTask extends AbstractTask implements ProgressProviderInte
         $eventDispatcher = GeneralUtility::makeInstance(EventDispatcherInterface::class);
         $end = time() + $seconds;
 
-        $requestOptions = $eventDispatcher->dispatch(new PrepareWarmupRequestOptions())->getRequestOptions();
+        $event = new PrepareWarmupRequestOptions();
+        $event->setRequestOptions(['headers' => ['User-Agent' => self::DEFAULT_USER_AGENT]]);
+        $requestOptions = $eventDispatcher->dispatch($event)->getRequestOptions();
 
         foreach ($queueService->provide() as $url) {
             try {
